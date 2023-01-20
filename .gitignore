@@ -1,3 +1,14 @@
+# VSCode files
+*.vscode
+
+# Test files
+*test*
+
+# Text files
+*.txt
+
+# The following are a preset from github..
+
 # Prerequisites
 *.d
 
