@@ -21,6 +21,10 @@ class Communicator
         void update_input_shared_memory();
         void update_output_shared_memory(float arr[2]);
         void init_shared_memory_out();
+
+        const SPageFileGraphic*& get_graphics();
+        const SPageFilePhysics*& get_physics();
+        const SPageFileStatic*& get_static();
     
     private:
         SMElement m_graphics;
@@ -28,7 +32,7 @@ class Communicator
         SMElement m_static;
 
         const SPageFilePhysics* file_physics;
-        const SPageFileGraphic* file_graphic;
+        const SPageFileGraphic* file_graphics;
         const SPageFileStatic* file_static;
 
         boost::interprocess::windows_shared_memory shmem;
