@@ -18,10 +18,10 @@ Communicator::Communicator()
 void Communicator::update_input_shared_memory()
 {
     this->file_physics = (SPageFilePhysics*)this->m_physics.mapFileBuffer;
-    this->file_graphic = (SPageFileGraphic*)this->m_graphics.mapFileBuffer;
+    this->file_graphics = (SPageFileGraphic*)this->m_graphics.mapFileBuffer;
     this->file_static = (SPageFileStatic*)this->m_static.mapFileBuffer;
 
-    std::cout<<"heading: "<<this->file_physics->heading<<" coordinates: "<<this->file_graphic->carCoordinates[0]<<" "<<this->file_graphic->carCoordinates[2]<<std::endl;
+    //std::cout<<"heading: "<<this->file_physics->heading<<" coordinates: "<<this->file_graphics->carCoordinates[0]<<" "<<this->file_graphics->carCoordinates[2]<<std::endl;
     
 }
 
@@ -74,4 +74,19 @@ void Communicator::init_smelements()
 	{
 		MessageBoxA(GetActiveWindow(), "MapViewOfFile failed", "ACS", MB_OK);
 	}
+}
+
+const SPageFileGraphic*& Communicator::get_graphics()
+{
+    return this->file_graphics;
+}
+
+const SPageFilePhysics*& Communicator::get_physics()
+{
+    return this->file_physics;
+}
+
+const SPageFileStatic*& Communicator::get_static()
+{
+    return this->file_static;
 }

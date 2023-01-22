@@ -1,5 +1,9 @@
 set(HEADER_LIST "${assetto_autonomous_SOURCE_DIR}/include/Point.h")
 
-add_library(control STATIC Controller.cpp Controller.h ${HEADER_LIST})
+find_package(Boost REQUIRED)
 
-target_include_directories(control PUBLIC ${assetto_autonomous_SOURCE_DIR}/include ../control)
+add_library(control STATIC PurePursuit.cpp PurePursuit.h Controller.cpp Controller.h ${HEADER_LIST})
+
+target_include_directories(control PUBLIC ${assetto_autonomous_SOURCE_DIR}/include ../Control)
+
+target_link_libraries(communication ${Boost_LIBRARIES})

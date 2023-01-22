@@ -9,14 +9,21 @@ class Car
 {
     public:
         Car();
-        Car(std::vector<Point> waypoints, float wheelbase);
-        void update(float velocity, float orientation, Point position);
+        Car(std::vector<point> waypoints, float wheelbase);
+        void update(float velocity, float orientation, point position);
+
+        const float& get_velocity();
+        const float& get_orientation();
+        const float& get_wheelbase();
+        const point& get_position();
+        const std::vector<point>& get_waypoints();
+
     private:
         float velocity;
         float orientation;
         float wheelbase;
-        Point position;
-        std::vector<Point> waypoints;
+        point position;
+        std::vector<point> waypoints;
 };
 
 #endif // _CAR_HPP_
