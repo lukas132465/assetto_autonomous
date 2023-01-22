@@ -1,11 +1,14 @@
 # VSCode files
 *.vscode
 
+# Build files
+*build*
+
 # Test files
 *test*
 
 # Text files
-*.txt
+*map.txt
 
 # The following are a preset from github..
 
