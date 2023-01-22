@@ -1,0 +1,5 @@
+add_subdirectory(car)
+add_subdirectory(communication)
+add_subdirectory(control)
+add_subdirectory(perception)
+add_subdirectory(planning)
