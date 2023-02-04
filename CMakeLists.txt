@@ -8,6 +8,10 @@ set(Boost_USE_RELEASE_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME ON)
 
-add_subdirectory(lib)
+include(CTest)
+
+add_subdirectory(helpers)
+#add_subdirectory(lib)
 add_subdirectory(main)
 add_subdirectory(src)
+add_subdirectory(tests)

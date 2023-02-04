@@ -19,7 +19,7 @@ class Communicator
     public:
         Communicator();
         void update_input_shared_memory();
-        void update_output_shared_memory(float arr[2]);
+        void update_output_shared_memory(float* values);
         void init_shared_memory_out();
 
         const SPageFileGraphic*& get_graphics();

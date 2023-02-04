@@ -21,16 +21,16 @@ class PurePursuit : public Controller
 {
     public:
         PurePursuit();
-        PurePursuit(std::vector<std::vector<float>> waypoints, point current_position, float look_ahead_distance_base);
-        PurePursuit(std::vector<std::vector<float>> waypoints, point current_position, float look_ahead_distance_base, float multiplier, float wheelbase);
-        float calculate_steering_angle();
-        la_point calculate_look_ahead_point();
-        float calculate_look_ahead_distance();
-        void update(point position, float velocity, float orientation);
+        PurePursuit(float look_ahead_distance_base, float multiplier);
+        float* calculate_values(std::vector<point> &waypoints, point &position, float &velocity, float &orientation, float &wheelbase);
+        float calculate_steering_angle(std::vector<point> &waypoints, point &position, float &velocity, float &orientation, float &wheelbase);
+        float calculate_velocity(float &velocity);
+        la_point calculate_look_ahead_point(std::vector<point> &waypoints, point &position, float &velocity);
+        float calculate_look_ahead_distance(float &velocity);
+        point* calculate_base_point(std::vector<point> &waypoints, point &position);
     protected:
         float look_ahead_distance_base;
         float multiplier;
-        float wheelbase;
 };
 
 #endif // _PURE_PURSUIT_HPP_
