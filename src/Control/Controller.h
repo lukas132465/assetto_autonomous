@@ -10,12 +10,7 @@ class Controller
 {
     public:
         Controller();
-        Controller(std::vector<std::vector<float>> waypoints, point current_position);
-    //protected:
-        std::vector<point> waypoints;
-        point position;
-        float velocity;
-        float orientation;
+        virtual float* calculate_values(std::vector<point> &waypoints, point &position, float &velocity, float &orientation, float &wheelbase) = 0;
 };
 
 #endif // _CONTROLLER_HPP_

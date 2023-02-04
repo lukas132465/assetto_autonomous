@@ -6,4 +6,4 @@ add_library(control STATIC PurePursuit.cpp PurePursuit.h Controller.cpp Controll
 
 target_include_directories(control PUBLIC ${assetto_autonomous_SOURCE_DIR}/include ../Control)
 
-target_link_libraries(communication ${Boost_LIBRARIES})
+target_link_libraries(control ${Boost_LIBRARIES})

@@ -1,90 +1,86 @@
 #include "PurePursuit.h"
-#include "Controller.cpp" // ToDo: This is major shit, i dont know why it doesnt work otherwise
+#include "Controller.h"
 
 #include <cmath>
 #include <algorithm>
 #include <iostream>
 
-/*int main()
-{
-    float la_d = 0.1;
-    point current_position {0.5, 0.5};
-    std::vector<std::vector<float>> wp;
-    for (float i = 0; i < 11; i++)
-    {
-        std::vector<float> p {i, i};
-        //std::vector<float> p {-i, -static_cast<float>(pow(i, (2.0)))};
-        wp.push_back(p);
-    }
-    PurePursuit Pps = PurePursuit(wp, current_position, la_d);
-    la_point p = Pps.calculate_look_ahead_point();
-    std::cout<<"la_point coordinates: "<<p.la_x<<" "<<p.la_y<<" "<<p.la_d<<std::endl<<std::endl;
-
-    float angle = Pps.calculate_steering_angle();
-    std::cout<<"steering angle: "<<angle<<std::endl;
-
-    return 0;
-}*/
 
 PurePursuit::PurePursuit() : Controller()
 {
+    this->look_ahead_distance_base = 0.1;
+    this->multiplier = 1;
 }
 
-PurePursuit::PurePursuit(std::vector<std::vector<float>> waypoints, point current_position, float look_ahead_distance_base, float multiplier, float wheelbase) : Controller(waypoints, current_position)
+PurePursuit::PurePursuit(float look_ahead_distance_base, float multiplier) : Controller()
 {
     this->look_ahead_distance_base = look_ahead_distance_base;
     this->multiplier = multiplier;
-    this->wheelbase = wheelbase;
 }
 
-PurePursuit::PurePursuit(std::vector<std::vector<float>> waypoints, point current_position, float look_ahead_distance_base) : PurePursuit(waypoints, current_position, look_ahead_distance_base, 1, 3)
+float* PurePursuit::calculate_values(std::vector<point> &waypoints, point &position, float &velocity, float &orientation, float &wheelbase)
 {
+    float* values = new float[2];
+    values[0] = this->calculate_velocity(velocity);
+    values[1] = this->calculate_steering_angle(waypoints, position, velocity, orientation, wheelbase);
+    return values;
 }
 
-void PurePursuit::update(point position, float velocity, float orientation)
-{
-    this->position = position;
-    this->velocity = velocity;
-    this->orientation = orientation;
-}
-
-float PurePursuit::calculate_steering_angle()
+float PurePursuit::calculate_steering_angle(std::vector<point> &waypoints, point &position, float &velocity, float &orientation, float &wheelbase)
 {
     // Steering angle can be calculated as arctan((2*L*sin(alpha)) / la_d) with
     // L: wheelbase
     // la_d: look-ahead-distance
     // alpha: arctan2(y_target_point,x_target_point), arctan2 is needed to keep a sense of direction
 
-    // Currently we do not take into account the current vehicle orientation, the default is that the vehicle is always oriented along the x-axis
-    // Idea: find out current car rotation ingame and use it insteat of rotation "radians"
-
     const float pi {3.14159};
 
-    la_point p = calculate_look_ahead_point();
+    la_point p = calculate_look_ahead_point(waypoints, position, velocity);
 
-    float dx {p.la_x - this->position.x};
-    float dy {p.la_y - this->position.y};
+    float dx {p.la_x - position.x};
+    float dy {p.la_y - position.y};
 
-    // Rotate the point by orientation radians
-    // The default ingame zero orientation is along the positive y-axis
+    // Rotate the point by orientation (degree in radians)
+    // The default ingame zero orientation is along the positive x-axis
     // The default zero orientation with atan2() is along the positive x-axis
-    // Therefore we need to rotate the point by 90 degrees + the ingame-orientation clockwise (thats why we need the -1)
-    float radians = -1 * (pi / 2 + this->orientation);
-    float rotated_x = this->position.x + dx * cos(radians) - dy * sin(radians);
-    float rotated_y = this->position.y + dy * cos(radians) + dx * sin(radians);
+    // Therefore we can just rotate by orientation radians
+    float rotated_x = position.x + dx * cos(orientation) - dy * sin(orientation);
+    float rotated_y = position.y + dy * cos(orientation) + dx * sin(orientation);
 
-    //std::cout<<"rotated coordinates: "<<rotated_x<<" "<<rotated_y<<std::endl;
-
-    dx = {rotated_x - this->position.x};
-    dy = {rotated_y - this->position.y};
+    dx = {rotated_x - position.x};
+    dy = {rotated_y - position.y};
     
     float alpha = atan2(dy, dx);
-    float angle = -1 * atan((2 * this->wheelbase * sin(alpha)) / p.la_d) / (0.5 * pi);
-    //std::cout<<"angle in degrees: "<<angle * (180.0/pi)<<std::endl;
-    return angle;
+    float angle = -1 * atan((2 * wheelbase * sin(alpha)) / p.la_d) / (0.5 * pi);
+    std::cout<<"angle: "<<angle<<" la_x: "<<p.la_x<<" la_y: "<<p.la_y<<" base: "<<p.base->x<<" "<<p.base->y<<" "
+        <<"coord diff: "<<dx<<" "<<dy<<" ";
+
+    // Scale angle with root - not anymore needed
+    if (angle < 0)
+    {
+        //return -1 * sqrt(sqrt(abs(angle)));
+        return angle;
+    }
+    else
+    {
+        //return sqrt(sqrt(angle));
+        return angle;
+    }
 }
 
-la_point PurePursuit::calculate_look_ahead_point()
+float PurePursuit::calculate_velocity(float &velocity)
+{
+    if (velocity < 50)
+    {
+        return 0.5f;
+    }
+    else
+    {
+        return 0.1f;
+    }
+}
+
+la_point PurePursuit::calculate_look_ahead_point(std::vector<point> &waypoints, point &position, float &velocity)
 {
     // 1. find point behind oneself and use it as base point
     //      a) Idea: calculate x and y distance between points, span a rectangle and check if point is in this rectangle
@@ -95,9 +91,77 @@ la_point PurePursuit::calculate_look_ahead_point()
     //      a) calculate distance from each point to base point
     //      b) accumulate distance from each point -> otherwise corners might get cut
 
-    point* base_point = nullptr;
+    point* base_point = calculate_base_point(waypoints, position);
 
-/* Take the closest point only!
+    la_point p;
+
+    p.base = base_point;
+    
+    // Find la_point
+    // Idea: follow the waypoints vector in the right! direction after the base point
+    //      Starting from the base point, add the distance after each waypoint until the next waypoint would be too far away (look_ahead_distance)
+    //      Currently: Take the waypoint one further ahead
+    //          Maybe for future: some kind of interpolation
+    //      Return this look_ahead_point
+
+    float la_d = calculate_look_ahead_distance(velocity);
+    float accumulated_distance {0};
+    point* next_point = base_point;
+    if (next_point == &(waypoints.back()))
+    {
+        next_point = &(waypoints.front());
+    }
+    else
+    {
+        next_point++;
+    }
+
+    // Calculate distance between points and add to accumulated_distance
+    do
+    {
+        accumulated_distance += sqrt(pow(next_point->x - base_point->x, 2) + pow(next_point->y - base_point->y, 2));
+
+        if (base_point == &(waypoints.back()))
+        {
+            base_point = &(waypoints.front());
+        }
+        else
+        {
+            base_point++;
+        }
+        if (next_point == &(waypoints.back()))
+        {
+            next_point = &(waypoints.front());
+        }
+        else
+        {
+            next_point++;
+        }
+    }
+    while (accumulated_distance < la_d);
+
+    // Get the point before next_point, because next_point is one too far in the distance
+    // In the while-loop above, base_point got changed to always be 1 less than next_point, so we can just use that
+    /*if (base_point == &(this->waypoints.front()))
+    {
+        base_point = &(this->waypoints.back());
+    }
+    else{
+        base_point--;
+    }*/
+
+    // Calculate the actual distance between la_point and vehicle position to use in PurePursuit algorithm   
+    float actual_distance = sqrt(pow(base_point->x - position.x, 2) + pow(base_point->y - position.y, 2));
+
+    p.la_x = base_point->x;
+    p.la_y = base_point->y;
+    p.la_d=actual_distance;
+    return p;
+}
+
+point* PurePursuit::calculate_base_point(std::vector<point> &waypoints, point &position)
+{
+    /* Take the closest point only!
     // Get the base point in waypoints: the first point of two, between which the vechile position is
     for (auto wp = this->waypoints.begin(); wp+1 != this->waypoints.end(); wp++)
     {
@@ -165,93 +229,26 @@ la_point PurePursuit::calculate_look_ahead_point()
                 break;
             }
     }
-*/
-    
-    // If base_point has not been found, take the closest point to it!
-    if (base_point == nullptr)
-    {
-        base_point = &(this->waypoints.front());
-        float d_base = pow(this->position.x - base_point->x, 2) + pow(this->position.y - base_point->y, 2);
+    */
 
-        for (point* wp = &(this->waypoints.front()) + 1; wp <= &(this->waypoints.back()); wp++)
+
+    point* base_point;
+    base_point = &(waypoints.front());
+        float d_base = pow(position.x - base_point->x, 2) + pow(position.y - base_point->y, 2);
+
+        for (point* wp = &(waypoints.front()) + 1; wp <= &(waypoints.back()); wp++)
         {
-            if ((pow(this->position.x - wp->x, 2) + pow(this->position.y - wp->y, 2)) < d_base)
+            if ((pow(position.x - wp->x, 2) + pow(position.y - wp->y, 2)) < d_base)
             {
                 base_point = wp;
-                d_base = (pow(this->position.x - wp->x, 2) + pow(this->position.y - wp->y, 2));
+                d_base = (pow(position.x - wp->x, 2) + pow(position.y - wp->y, 2));
             }
         }
-    }
-    
-    // Find la_point
-    // Idea: follow the waypoints vector in the right! direction after the base point
-    //      Starting from the base point, add the distance after each waypoint until the next waypoint would be too far away (look_ahead_distance)
-    //      Currently: Take the waypoint one further ahead
-    //          Maybe for future: some kind of interpolation
-    //      Return this look_ahead_point
-
-    float la_d = calculate_look_ahead_distance();
-    float accumulated_distance {0};
-    point* next_point;
-    if (base_point == &(this->waypoints.back()))
-    {
-        next_point = &(this->waypoints.front());
-    }
-    else
-    {
-        next_point = base_point + 1;
-    }
-    
-    // Calculate distance between points and add to accumulated_distance
-    do
-    {
-        accumulated_distance += sqrt(pow(next_point->x - base_point->x, 2) + pow(next_point->y - base_point->y, 2));
-
-        if (base_point == &(this->waypoints.back()))
-        {
-            base_point = &(this->waypoints.front());
-        }
-        else
-        {
-            base_point++;
-        }
-        if (next_point == &(this->waypoints.back()))
-        {
-            next_point = &(this->waypoints.front());
-        }
-        else
-        {
-            next_point++;
-        }
-    }
-    while (accumulated_distance < la_d);
-
-    // Get the point before next_point, because next_point is one too far in the distance
-    // In the while-loop above, base_point got changed to always be 1 less than next_point, so we can just use that
-    /*if (base_point == &(this->waypoints.front()))
-    {
-        base_point = &(this->waypoints.back());
-    }
-    else{
-        base_point--;
-    }*/
-    
-    std::cout<<"base_point: "<<base_point->x<<" "<<base_point->y<<" next_point: "<<next_point->x<<" "<<next_point->y<<std::endl;
-
-    // Calculate the actual distance between la_point and vehicle position to use in PurePursuit algorithm   
-    float actual_distance = sqrt(pow(base_point->x - this->position.x, 2) + pow(base_point->y - this->position.y, 2));
-
-    std::cout<<"distance: "<<actual_distance<<std::endl;
-
-    la_point p;
-    p.la_x = base_point->x;
-    p.la_y = base_point->y;
-    p.la_d=actual_distance;
-    return p;
+    return base_point;
 }
 
 // ToDo: adapt for higher driving speed
-float PurePursuit::calculate_look_ahead_distance()
+float PurePursuit::calculate_look_ahead_distance(float &velocity)
 {
-    return this->look_ahead_distance_base * this->velocity;
+    return std::max(this->look_ahead_distance_base * velocity, 5.0f);
 }
