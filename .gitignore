@@ -5,7 +5,8 @@
 *build*
 
 # Test files
-*test*
+*test.*
+*tests.*
 
 # Text files
 *map.txt
