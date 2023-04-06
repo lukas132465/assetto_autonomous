@@ -4,24 +4,22 @@
 #include <iostream>
 #include <fstream>
 
-const float wheelbase {2.456}; // According to https://www.stuttcars.com/porsche-911-gt3-cup-991-2-2016-2020-specifications-performance/
-
+// According to https://www.stuttcars.com/porsche-911-gt3-cup-991-2-2016-2020-specifications-performance/
+const float wheelbase {2.456};
 float velocity;
 float orientation;
 point position;
 
 std::vector<point> waypoints;
 
-const std::string in_file_path {"C:\\Users\\lukas\\Documents\\Projects\\assetto_autonomous\\Records\\monza.txt"};
-
 std::vector<point> read_file();
 
-int main()
+int main(int argc, char *argv[])
 {
     waypoints = read_file();
     Communicator Com;
     Car Car(waypoints, wheelbase);
-    PurePursuit Con;
+    PurePursuit Ppc;
 
     while (true)
     {
@@ -35,7 +33,7 @@ int main()
 
         Car.update(velocity, orientation, steering_angle, position);
 
-        float* values = Car.calculate_control(&Con);
+        float* values = Car.calculate_control(&Ppc);
         Car.communicate_control(&Com, values);
         delete[] values;
 
@@ -48,7 +46,7 @@ int main()
 std::vector<point> read_file()
 {
     std::vector<point> result;
-    std::ifstream In_file(in_file_path);
+    std::ifstream In_file(PATH_TO_TXT);
     std::string line;
     std::string temp;
     point p;
