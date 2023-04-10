@@ -6,13 +6,13 @@
 #include <iostream>
 
 
-PurePursuit::PurePursuit() : Controller()
+PurePursuit::PurePursuit()
 {
     this->look_ahead_distance_base = 0.1;
     this->multiplier = 1;
 }
 
-PurePursuit::PurePursuit(float look_ahead_distance_base, float multiplier) : Controller()
+PurePursuit::PurePursuit(float look_ahead_distance_base, float multiplier)
 {
     this->look_ahead_distance_base = look_ahead_distance_base;
     this->multiplier = multiplier;
