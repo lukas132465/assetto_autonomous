@@ -4,6 +4,6 @@ find_package(Boost REQUIRED)
 
 add_library(communication STATIC Communicator.cpp Communicator.h ${HEADER_LIST})
 
-target_include_directories(communication PUBLIC ${assetto_autonomous_SOURCE_DIR}/include ${Boost_INCLUDE_DIRS} ../Communication)
+target_include_directories(communication PUBLIC ${assetto_autonomous_SOURCE_DIR}/include ${Boost_INCLUDE_DIRS} ../communication)
 
 target_link_libraries(communication ${Boost_LIBRARIES})
