@@ -14,7 +14,7 @@ class Car
         Car(std::vector<point> waypoints, float wheelbase);
         void update(float velocity, float orientation, float steering_angle, point position);
         float* calculate_control(Controller* Con); // Caution: returns a dynamically allocated array
-        void communicate_control(Communicator* Com, float* values);
+        void communicate_control(ACSharedMemory* Com, float* values);
 
         const float& get_velocity();
         const float& get_orientation();

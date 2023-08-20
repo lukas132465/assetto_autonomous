@@ -29,7 +29,7 @@ float* Car::calculate_control(Controller* Con)
     return Con->calculate_values(this->waypoints, this->position, this->velocity, this->orientation, this->wheelbase);
 }
 
-void Car::communicate_control(Communicator* Com, float* values)
+void Car::communicate_control(ACSharedMemory* Com, float* values)
 {
     // Do not directly communicate the steering angle, instead check for the current angle and steer with {-1; 0; 1} as the game doesnt allow "instant" steering and changes the steering value (probably depending on current speed?)
     

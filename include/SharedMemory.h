@@ -1,9 +1,6 @@
 #ifndef _SHARED_MEMORY_HPP_
 #define _SHARED_MEMORY_HPP_
 
-#pragma once
-
-
 typedef int AC_STATUS;
 
 #define AC_OFF 0
@@ -22,9 +19,6 @@ typedef int AC_SESSION_TYPE;
 #define AC_DRIFT 5
 #define AC_DRAG 6
 
-
-#pragma pack(push)
-#pragma pack(4)
 
 struct SPageFilePhysics
 {
@@ -109,8 +103,5 @@ struct SPageFileStatic
 	float suspensionMaxTravel[4];
 	float tyreRadius[4];
 };
-
-
-#pragma pack(pop)
 
 #endif  // _SHARED_MEMORY_HPP_

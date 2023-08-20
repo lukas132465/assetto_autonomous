@@ -19,8 +19,8 @@ inline unsigned arraysize(const T(&v)[S])
 
 struct SMElement
 {
-	HANDLE hMapFile;
-	unsigned char* mapFileBuffer;
+	HANDLE handle_map_file;
+	unsigned char* map_file_buffer;
 };
 
 SMElement m_graphics;
@@ -30,13 +30,13 @@ SMElement m_static;
 void initPhysics()
 {
 	TCHAR szName[] = TEXT("Local\\acpmf_physics");
-	m_physics.hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SPageFilePhysics), szName);
-	if (!m_physics.hMapFile)
+	m_physics.handle_map_file = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SPageFilePhysics), szName);
+	if (!m_physics.handle_map_file)
 	{
 		MessageBoxA(GetActiveWindow(), "CreateFileMapping failed", "ACS", MB_OK);
 	}
-	m_physics.mapFileBuffer = (unsigned char*)MapViewOfFile(m_physics.hMapFile, FILE_MAP_READ, 0, 0, sizeof(SPageFilePhysics));
-	if (!m_physics.mapFileBuffer)
+	m_physics.map_file_buffer = (unsigned char*)MapViewOfFile(m_physics.handle_map_file, FILE_MAP_READ, 0, 0, sizeof(SPageFilePhysics));
+	if (!m_physics.map_file_buffer)
 	{
 		MessageBoxA(GetActiveWindow(), "MapViewOfFile failed", "ACS", MB_OK);
 	}
@@ -45,13 +45,13 @@ void initPhysics()
 void initGraphics()
 {
 	TCHAR szName[] = TEXT("Local\\acpmf_graphics");
-	m_graphics.hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SPageFileGraphic), szName);
-	if (!m_graphics.hMapFile)
+	m_graphics.handle_map_file = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SPageFileGraphic), szName);
+	if (!m_graphics.handle_map_file)
 	{
 		MessageBoxA(GetActiveWindow(), "CreateFileMapping failed", "ACS", MB_OK);
 	}
-	m_graphics.mapFileBuffer = (unsigned char*)MapViewOfFile(m_graphics.hMapFile, FILE_MAP_READ, 0, 0, sizeof(SPageFileGraphic));
-	if (!m_graphics.mapFileBuffer)
+	m_graphics.map_file_buffer = (unsigned char*)MapViewOfFile(m_graphics.handle_map_file, FILE_MAP_READ, 0, 0, sizeof(SPageFileGraphic));
+	if (!m_graphics.map_file_buffer)
 	{
 		MessageBoxA(GetActiveWindow(), "MapViewOfFile failed", "ACS", MB_OK);
 	}
@@ -60,13 +60,13 @@ void initGraphics()
 void initStatic()
 {
 	TCHAR szName[] = TEXT("Local\\acpmf_static");
-	m_static.hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SPageFileStatic), szName);
-	if (!m_static.hMapFile)
+	m_static.handle_map_file = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(SPageFileStatic), szName);
+	if (!m_static.handle_map_file)
 	{
 		MessageBoxA(GetActiveWindow(), "CreateFileMapping failed", "ACS", MB_OK);
 	}
-	m_static.mapFileBuffer = (unsigned char*)MapViewOfFile(m_static.hMapFile, FILE_MAP_READ, 0, 0, sizeof(SPageFileStatic));
-	if (!m_static.mapFileBuffer)
+	m_static.map_file_buffer = (unsigned char*)MapViewOfFile(m_static.handle_map_file, FILE_MAP_READ, 0, 0, sizeof(SPageFileStatic));
+	if (!m_static.map_file_buffer)
 	{
 		MessageBoxA(GetActiveWindow(), "MapViewOfFile failed", "ACS", MB_OK);
 	}
@@ -74,8 +74,8 @@ void initStatic()
 
 void dismiss(SMElement element)
 {
-	UnmapViewOfFile(element.mapFileBuffer);
-	CloseHandle(element.hMapFile);
+	UnmapViewOfFile(element.map_file_buffer);
+	CloseHandle(element.handle_map_file);
 }
 
 void printData(string name, float value)
@@ -109,7 +109,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		if (GetAsyncKeyState(0x31) != 0) // user pressed 1
 		{
 			wcout << "---------------PHYSICS INFO---------------" << endl;
-			SPageFilePhysics* pf = (SPageFilePhysics*)m_physics.mapFileBuffer;
+			SPageFilePhysics* pf = (SPageFilePhysics*)m_physics.map_file_buffer;
 			printData("acc G", pf->accG);
 			printData("brake", pf->brake);
 			printData("camber rad", pf->camberRAD);
@@ -142,7 +142,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		if (GetAsyncKeyState(0x32) != 0) // user pressed 2
 		{
 			wcout << "---------------GRAPHICS INFO---------------" << endl;
-			SPageFileGraphic* pf = (SPageFileGraphic*)m_graphics.mapFileBuffer;
+			SPageFileGraphic* pf = (SPageFileGraphic*)m_graphics.map_file_buffer;
 			printData("packetID ", pf->packetId);
 			printData("STATUS ", pf->status);
 			printData("session", pf->session);
@@ -168,7 +168,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		if (GetAsyncKeyState(0x33) != 0) // user pressed 3
 		{
 			wcout << "---------------STATIC INFO---------------" << endl;
-			SPageFileStatic* pf = (SPageFileStatic*)m_static.mapFileBuffer;
+			SPageFileStatic* pf = (SPageFileStatic*)m_static.map_file_buffer;
 			wcout << "SM VERSION " << pf->smVersion << endl;
 			wcout << "AC VERSION " << pf->acVersion << endl;
 

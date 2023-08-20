@@ -10,14 +10,14 @@ const std::string file_path {"C:\\Users\\lukas\\Documents\\Projects\\assetto_aut
 
 int main()
 {
-    Communicator Com;
+    ACSharedMemory shared_memory;
     
     std::ofstream Out_file(file_path);
 
     while (true)
     {
-        Com.update_input_shared_memory();
-        Out_file << Com.get_graphics()->carCoordinates[2] << " " << Com.get_graphics()->carCoordinates[0] << std::endl;
+        shared_memory.update();
+        Out_file << shared_memory.get_graphics()->carCoordinates[2] << " " << shared_memory.get_graphics()->carCoordinates[0] << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 

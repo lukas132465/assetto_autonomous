@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.23.0...3.25.2)
 project(assetto_autonomous VERSION 0.1 LANGUAGES CXX)
 
-set(Boost_INCLUDE_DIR "/usr/include/boost_1_82_0")
+IF (WIN32)
+    # what does the 0x0601 in the following line do?
+    add_definitions(-D_WIN32_WINNT=0x0A00)
+    set(Boost_INCLUDE_DIR "C:/Program Files/boost/boost_1_82_0")
+ELSE()
+    set(Boost_INCLUDE_DIR "/usr/include/boost_1_82_0")
+ENDIF()
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_DEBUG_LIBS OFF)
 set(Boost_USE_RELEASE_LIBS ON)

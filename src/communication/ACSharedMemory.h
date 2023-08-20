@@ -1,30 +1,30 @@
-#ifndef _WINDOWS_COMMUNICATOR_HPP_
-#define _WINDOWS_COMMUNICATOR_HPP_
+#ifndef _ACSharedMemory_HPP_
+#define _ACSharedMemory_HPP_
 
 #include "SharedMemory.h"
 
 #include <string>
 #include <map>
-#include <windows.h>
 #include <boost/interprocess/windows_shared_memory.hpp>
+#include <windows.h>
 
 struct SMElement
 {
-    HANDLE hMapFile;
-    unsigned char* mapFileBuffer;
+    HANDLE handle_map_file;
+    unsigned char* map_file_buffer;
 };
 
-class Communicator
+class ACSharedMemory
 {
     public:
-        Communicator();
-        void update_input_shared_memory();
+        ACSharedMemory();
+        void update();
         void update_output_shared_memory(float* values);
         void init_shared_memory_out();
 
-        const SPageFileGraphic*& get_graphics();
-        const SPageFilePhysics*& get_physics();
-        const SPageFileStatic*& get_static();
+        const SPageFileGraphic* get_graphics();
+        const SPageFilePhysics* get_physics();
+        const SPageFileStatic* get_static();
     
     private:
         SMElement m_graphics;
@@ -37,7 +37,7 @@ class Communicator
 
         boost::interprocess::windows_shared_memory shmem;
 
-        void init_smelements();
+        void init_shared_memory_elements();
 };
 
-#endif // _WINDOWS_COMMUNICATOR_HPP_
+#endif // _ACSharedMemory_HPP_
