@@ -19,32 +19,20 @@ std::vector<point> read_file();
 int main()
 {
     waypoints = read_file();
-    ACSharedMemory shared_memory;
     Car Car(waypoints, wheelbase);
     PurePursuit Con;
 
     while (true)
     {
-        shared_memory.update();
+        Car.run_cycle();
 
-        float velocity = shared_memory.get_physics()->speedKmh;
-        float orientation = shared_memory.get_physics()->heading;
-        float steering_angle = shared_memory.get_physics()->steerAngle;
-        position.x = shared_memory.get_graphics()->carCoordinates[2];
-        position.y = shared_memory.get_graphics()->carCoordinates[0];
-
-        Car.update(velocity, orientation, steering_angle, position);
-
-        float* values = Car.calculate_control(&Con);
-        Car.communicate_control(&shared_memory, values);
-        delete[] values;
-
-        std::cout<<"steering angle: "<<Car.get_steering_angle()<<" velocity: "<<Car.get_velocity()<<" orientation: "<<Car.get_orientation()<<" pos_x: "<<Car.get_position().x<<" pos_y: "<<Car.get_position().y<<std::endl;
+        std::cout << "steering angle: " << Car.get_steering_angle() << " velocity: " << Car.get_velocity() << " orientation: " << Car.get_orientation() << " pos_x: " << Car.get_position().x << " pos_y: " << Car.get_position().y << std::endl;
     }
 
     return 0;
 }
 
+// ToDo: put this in a separate file
 std::vector<point> read_file()
 {
     std::vector<point> result;

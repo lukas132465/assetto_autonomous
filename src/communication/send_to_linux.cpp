@@ -21,7 +21,7 @@ int main()
         shared_info.steerAngle = ac_shared_memory.get_physics()->steerAngle;
         shared_info.coordinate_x = ac_shared_memory.get_graphics()->carCoordinates[2];
         shared_info.coordinate_y = ac_shared_memory.get_graphics()->carCoordinates[0];
-        
+
         sender.send(shared_info.to_string());
     }
 }

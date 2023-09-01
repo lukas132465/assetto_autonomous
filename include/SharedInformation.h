@@ -1,3 +1,6 @@
+#ifndef _SHARED_INFORMATION_HPP_
+#define _SHARED_INFORMATION_HPP_
+
 #include <sstream>
 
 
@@ -7,12 +10,12 @@ struct SharedInformation
     float heading = 0;
     float steerAngle = 0;
     float coordinate_x = 0;
-    float coordinate_y = 1; 
+    float coordinate_y = 0;
 
-    std::string to_string();
+    inline std::string to_string();
 };
 
-std::string SharedInformation::to_string()
+inline std::string SharedInformation::to_string()
 {
     std::stringstream builder;
     builder << "{"
@@ -25,3 +28,5 @@ std::string SharedInformation::to_string()
 
     return builder.str();
 }
+
+#endif // _SHARED_INFORMATION_HPP_

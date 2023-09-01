@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <boost/asio.hpp>
-#include <boost/json.hpp>
+#include <boost/json/src.hpp> // ToDo: Find out if this should be changed to boost/json.hpp
 
 
 Reader::Reader(int port) : port{port} {};
@@ -13,7 +13,7 @@ void Reader::read()
 
     const size_t buffer_size = 1024; // stores the input json string
 
-    try 
+    try
     {
         boost::asio::io_context io_context;
         udp::socket socket(io_context, udp::endpoint(udp::v4(), port));
@@ -24,24 +24,25 @@ void Reader::read()
             std::array<char, buffer_size> recv_buffer;
             udp::endpoint sender_endpoint;
             size_t length = socket.receive_from(boost::asio::buffer(recv_buffer), sender_endpoint);
-            
+
             std::string received_message(recv_buffer.data(), length);
-            update(received_message);
+            _update(received_message);
         }
-    } 
-    catch (std::exception& e) 
+    }
+    catch (std::exception& e)
     {
         std::cerr << e.what() << std::endl;
     }
 }
 
-SharedInformation* Reader::get_info()
+SharedInformation Reader::get_info()
 {
-    return &info;
+    return info;
 }
 
-void Reader::update(std::string data_string)
+void Reader::_update(std::string data_string)
 {
+    std::lock_guard<std::mutex> lock(mutex);
     boost::json::object data = boost::json::parse(data_string).as_object();
 
     auto find_element = [data](std::string name)

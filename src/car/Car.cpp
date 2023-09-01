@@ -2,78 +2,86 @@
 
 #include <iostream>
 
-Car::Car()
+
+Car::Car(std::vector<point> waypoints, float wheelbase, std::string sender_ip, std::string sender_port)
+        : waypoints{waypoints}, wheelbase{wheelbase}, sender{sender_ip, sender_port}
 {
+    std::thread readerThread(&Reader::read, &reader);
+    readerThread.detach();
 }
 
-Car::Car(std::vector<point> waypoints, float wheelbase)
+void Car::update_info()
 {
-    this->velocity = 0.0;
-    this->orientation = 0.0;
-    this->position = {0.0, 0.0};
-
-    this->waypoints = waypoints;
-    this->wheelbase = wheelbase;
-}
-
-void Car::update(float velocity, float orientation, float steering_angle, point position)
-{
-    this->velocity = velocity;
-    this->orientation = orientation;
-    this->steering_angle = steering_angle;
-    this->position = position;
+    info = reader.get_info();
 }
 
 float* Car::calculate_control(Controller* Con)
 {
-    return Con->calculate_values(this->waypoints, this->position, this->velocity, this->orientation, this->wheelbase);
+    return Con->calculate_values(waypoints, get_position(), get_velocity(), get_orientation(), get_wheelbase());
 }
 
-void Car::communicate_control(ACSharedMemory* Com, float* values)
+
+void Car::communicate_control(float acceleration, float steering)
 {
-    // Do not directly communicate the steering angle, instead check for the current angle and steer with {-1; 0; 1} as the game doesnt allow "instant" steering and changes the steering value (probably depending on current speed?)
-    
-    if (this->steering_angle < values[1])
+    // Do not directly communicate the steering angle, instead check for the current angle and steer with {-1; 0; 1} as the game doesnt allow "instant" steering and instead slowly changes the steering value itself (probably depending on current speed?)
+
+    if (get_steering_angle() < steering)
     {
-        values[1] = 1.0f;
+        steering = 1.0f;
     }
-    else if (this->steering_angle > values[1])
+    else if (get_steering_angle() > steering)
     {
-        values[1] = -1.0f;
+        steering = -1.0f;
     }
     else
     {
-        values[1] = 0.0f;
+        steering = 0.0f;
     }
-    Com->update_output_shared_memory(values);
+
+    std::stringstream builder;
+    builder << "{"
+            << "\"acceleration\": " << acceleration << ", "
+            << "\"steering\": " << steering
+            << "}";
+
+    sender.send(builder.str());
 }
 
-const float& Car::get_velocity()
+void Car::run_cycle()
 {
-    return this->velocity;
+    // ToDo: insert Control step
+    update_info();
+    communicate_control(0.5, 0.7);
 }
 
-const float& Car::get_orientation()
+float& Car::get_velocity()
 {
-    return this->orientation;
+    return info.speedKmh;
 }
 
-const float& Car::get_wheelbase()
+float& Car::get_orientation()
 {
-    return this->wheelbase; 
+    return info.heading;
 }
 
-const point& Car::get_position()
+float& Car::get_wheelbase()
 {
-    return this->position; 
+    return wheelbase;
 }
 
-const float& Car::get_steering_angle()
+point& Car::get_position()
 {
-    return this->steering_angle; 
+    position.x = info.coordinate_x;
+    position.y = info.coordinate_y;
+    return position;
 }
 
-const std::vector<point>& Car::get_waypoints()
+float& Car::get_steering_angle()
 {
-    return this->waypoints;
+    return info.steerAngle;
+}
+
+std::vector<point>& Car::get_waypoints()
+{
+    return waypoints;
 }

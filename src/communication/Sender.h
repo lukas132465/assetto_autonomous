@@ -13,8 +13,8 @@ class Sender{
         void send(const T& message)
         {
                     using boost::asio::ip::udp;
-            
-            try 
+
+            try
             {
                 boost::asio::io_context io_context;
                 udp::socket socket(io_context, udp::v4());
@@ -23,13 +23,13 @@ class Sender{
                 udp::resolver::results_type endpoints = resolver.resolve(udp::v4(), ip, port);
 
                 socket.send_to(boost::asio::buffer(message), *endpoints.begin());
-            } 
-            catch (std::exception& e) 
+            }
+            catch (std::exception& e)
             {
                 std::cerr << e.what() << std::endl;
             }
         }
-    
+
     private:
         std::string ip;
         std::string port;
