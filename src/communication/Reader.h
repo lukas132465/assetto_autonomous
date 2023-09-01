@@ -1,14 +1,21 @@
 #ifndef _READER_HPP_
 #define _READER_HPP_
 
-#include <boost/json.hpp>
+#include "SharedInformation.h"
+#include <string>
 
-class Reader{
+
+class Reader
+{
     public:
-        int read();
-        boost::json::object* get_info();
+        Reader(int port=5005);
+        void read();
+        SharedInformation* get_info();
+        void update(std::string data_string);
+    
     private:
-        boost::json::object info;
+        int port;
+        SharedInformation info;
 };
 
 #endif // _READER_HPP_
