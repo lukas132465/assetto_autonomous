@@ -1,41 +1,51 @@
 import vgamepad as vg
-import mmap
 import numpy as np
 import time
+import socket
+import json
 
-CPP_FLOAT_SIZE = 4
-SHARED_MEMORY_NAME = "sm_control"
 
-print("You have 3s to change windows")
-time.sleep(3)
-gamepad = vg.VX360Gamepad()
-print("Gamepad should be connected")
-time.sleep(3)
-print("Running...")
+HOST = '0.0.0.0'
+PORT = 5006
+BUFFER_SIZE = 1024
 
-if __name__ == "__main__":
-    shared_memory = mmap.mmap(-1, 2*CPP_FLOAT_SIZE, SHARED_MEMORY_NAME)
-    while (True):
-        shared_memory.seek(0)
-        buf = shared_memory.read(2*CPP_FLOAT_SIZE)
-        acceleration, steering = np.frombuffer(buf, dtype=np.float32)
 
-        # Sanity check
-        if (not (-1 <= acceleration <= 1) or not (-1 <= steering <= 1)):
-            print(acceleration, steering)
-            continue
-        acceleration = float(acceleration)
-        steering = float(steering)
+if __name__ == '__main__':
+    print('You have 3s to change windows')
+    time.sleep(3)
+    gamepad = vg.VX360Gamepad()
+    print('Gamepad should be connected')
+    time.sleep(3)
+    print('Running...')
 
-        if (acceleration < 0):
-            gamepad.right_trigger_float(0)
-            gamepad.left_trigger_float(abs(acceleration))
-        else:
-            gamepad.right_trigger_float(acceleration)
-            gamepad.left_trigger_float(0)
-        
-        gamepad.left_joystick_float(steering, 0)
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.bind((HOST, PORT))
+        while (True):
+            try:
+                received_data = json.loads(s.recvfrom(BUFFER_SIZE)[0].decode('utf-8'))
+            except:
+                continue
 
-        gamepad.update()
+            if (not ('acceleration' in received_data and 'steering' in received_data)):
+                continue
+            acceleration = received_data['acceleration']
+            steering = received_data['steering']
 
-        print("acceleration:", acceleration, "steering:", steering)
+            # Sanity check
+            if (not ((-1 <= acceleration <= 1) or (-1 <= steering <= 1))):
+                continue
+            acceleration = float(acceleration)
+            steering = float(steering)
+
+            if (acceleration < 0):
+                gamepad.right_trigger_float(0)
+                gamepad.left_trigger_float(abs(acceleration))
+            else:
+                gamepad.right_trigger_float(acceleration)
+                gamepad.left_trigger_float(0)
+
+            gamepad.left_joystick_float(steering, 0)
+
+            gamepad.update()
+
+            print('acceleration:', acceleration, 'steering:', steering)
